@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Resume Analysis - {{ resume.name }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex align-items-center mb-4">
+        <a href="{{ url_for('candidate_dashboard') }}" class="btn btn-outline-secondary me-3">
+            <i class="fas fa-arrow-left me-1"></i>Back
+        </a>
+        <div>
+            <h3 class="fw-bold mb-0">Resume Analysis</h3>
+            <p class="text-muted mb-0">AI-powered insights for your resume</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Score Card -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm text-center p-4 mb-4">
+                <h5 class="fw-bold mb-3">Resume Quality Score</h5>
+                <div class="score-ring mx-auto mb-3" data-score="{{ resume.score or 0 }}">
+                    <svg width="140" height="140" viewBox="0 0 140 140">
+                        <circle cx="70" cy="70" r="60" fill="none" stroke="#e9ecef" stroke-width="12"/>
+                        <circle cx="70" cy="70" r="60" fill="none"
+                                stroke="{% if (resume.score or 0) >= 75 %}#198754{% elif (resume.score or 0) >= 50 %}#ffc107{% else %}#dc3545{% endif %}"
+                                stroke-width="12" stroke-linecap="round"
+                                stroke-dasharray="{{ ((resume.score or 0) / 100 * 376.99)|int }} 376.99"
+                                transform="rotate(-90 70 70)"/>
+                        <text x="70" y="75" text-anchor="middle" font-size="28" font-weight="bold"
+                              fill="{% if (resume.score or 0) >= 75 %}#198754{% elif (resume.score or 0) >= 50 %}#ffc107{% else %}#dc3545{% endif %}">
+                            {{ resume.score or 0 }}
+                        </text>
+                        <text x="70" y="92" text-anchor="middle" font-size="11" fill="#6c757d">/100</text>
+                    </svg>
+                </div>
+                <span class="badge {% if (resume.score or 0) >= 75 %}bg-success{% elif (resume.score or 0) >= 50 %}bg-warning text-dark{% else %}bg-danger{% endif %} fs-6 px-3 py-2">
+                    {% if (resume.score or 0) >= 75 %}Excellent{% elif (resume.score or 0) >= 50 %}Good{% else %}Needs Improvement{% endif %}
+                </span>
+                <hr>
+                <div class="text-start">
+                    <div class="d-flex justify-content-between mb-1"><small>Contact Info</small><small class="fw-bold">{% if resume.email and resume.phone %}✅{% elif resume.email %}⚠️{% else %}❌{% endif %}</small></div>
+                    <div class="d-flex justify-content-between mb-1"><small>Skills</small><small class="fw-bold">{{ skills_list|length }} found</small></div>
+                    <div class="d-flex justify-content-between mb-1"><small>Category</small><small class="fw-bold text-primary">{{ resume.category or 'General' }}</small></div>
+                </div>
+            </div>
+
+            <!-- Contact Info Card -->
+            <div class="card border-0 shadow-sm p-4">
+                <h6 class="fw-bold mb-3"><i class="fas fa-id-card text-primary me-2"></i>Extracted Info</h6>
+                <div class="info-item mb-2">
+                    <i class="fas fa-user text-muted me-2 w-16"></i>
+                    <span>{{ resume.name or 'Not found' }}</span>
+                </div>
+                <div class="info-item mb-2">
+                    <i class="fas fa-envelope text-muted me-2"></i>
+                    <span>{{ resume.email or 'Not found' }}</span>
+                </div>
+                <div class="info-item mb-2">
+                    <i class="fas fa-phone text-muted me-2"></i>
+                    <span>{{ resume.phone or 'Not found' }}</span>
+                </div>
+                <div class="info-item mb-2">
+                    <i class="fas fa-graduation-cap text-muted me-2"></i>
+                    <span class="small">{{ (resume.education or 'Not specified')[:80] }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Skills Section -->
+            <div class="card border-0 shadow-sm mb-4 p-4">
+                <h5 class="fw-bold mb-3"><i class="fas fa-cogs text-success me-2"></i>Detected Skills ({{ skills_list|length }})</h5>
+                {% if skills_list %}
+                <div class="skills-cloud">
+                    {% for skill in skills_list %}
+                    <span class="skill-badge">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No skills detected. Make sure your resume mentions technical skills clearly.</p>
+                {% endif %}
+            </div>
+
+            <!-- AI Feedback -->
+            <div class="card border-0 shadow-sm mb-4 p-4">
+                <h5 class="fw-bold mb-3"><i class="fas fa-robot text-info me-2"></i>AI Resume Feedback</h5>
+                <div class="row g-3">
+                    <!-- Strengths -->
+                    <div class="col-md-4">
+                        <h6 class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i>Strengths</h6>
+                        {% for item in feedback.strengths %}
+                        <div class="feedback-item feedback-success mb-2">
+                            <i class="fas fa-check text-success me-1 small"></i>
+                            <span class="small">{{ item }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <!-- Improvements -->
+                    <div class="col-md-4">
+                        <h6 class="text-warning fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Improvements</h6>
+                        {% for item in feedback.improvements %}
+                        <div class="feedback-item feedback-warning mb-2">
+                            <i class="fas fa-arrow-right text-warning me-1 small"></i>
+                            <span class="small">{{ item }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <!-- Missing Sections -->
+                    <div class="col-md-4">
+                        <h6 class="text-danger fw-bold"><i class="fas fa-times-circle me-1"></i>Missing</h6>
+                        {% for item in feedback.missing_sections %}
+                        <div class="feedback-item feedback-danger mb-2">
+                            <i class="fas fa-times text-danger me-1 small"></i>
+                            <span class="small">{{ item }}</span>
+                        </div>
+                        {% endfor %}
+                        {% if not feedback.missing_sections %}
+                        <div class="feedback-item feedback-success">
+                            <span class="small">All major sections found! ✅</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Raw Text Preview -->
+            <div class="card border-0 shadow-sm p-4">
+                <h5 class="fw-bold mb-3"><i class="fas fa-file-alt text-secondary me-2"></i>Extracted Text Preview</h5>
+                <div class="raw-text-preview">
+                    <pre class="small text-muted">{{ (resume.raw_text or 'No text extracted')[:800] }}{% if resume.raw_text and resume.raw_text|length > 800 %}...{% endif %}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

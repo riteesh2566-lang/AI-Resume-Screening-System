@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Recruiter Dashboard - ResumeAI{% endblock %}
+{% block content %}
+<div class="container-fluid py-4 px-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h2 class="fw-bold mb-0"><i class="fas fa-user-tie text-primary me-2"></i>Recruiter Dashboard</h2>
+            <p class="text-muted mb-0">Welcome, <strong>{{ session.user_name }}</strong> 👋</p>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('create_job') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Post New Job
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-card bg-primary text-white">
+                <i class="fas fa-briefcase fa-2x mb-2 opacity-75"></i>
+                <div class="fs-2 fw-bold">{{ jobs|length }}</div>
+                <div class="small opacity-75">Jobs Posted</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card bg-success text-white">
+                <i class="fas fa-file-alt fa-2x mb-2 opacity-75"></i>
+                <div class="fs-2 fw-bold">{{ all_resumes|length }}</div>
+                <div class="small opacity-75">Total Candidates</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card bg-warning text-dark">
+                <i class="fas fa-star fa-2x mb-2 opacity-75"></i>
+                <div class="fs-2 fw-bold">
+                    {% if all_resumes %}{{ all_resumes[0].score or 0 }}{% else %}--{% endif %}
+                </div>
+                <div class="small opacity-75">Top Resume Score</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card bg-info text-white">
+                <i class="fas fa-chart-line fa-2x mb-2 opacity-75"></i>
+                <div class="fs-2 fw-bold">
+                    {% if all_resumes %}
+                        {{ (all_resumes|sum(attribute='score') / all_resumes|length)|int }}
+                    {% else %}--{% endif %}
+                </div>
+                <div class="small opacity-75">Avg Resume Score</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Jobs List -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold"><i class="fas fa-briefcase text-primary me-2"></i>Your Job Postings</h5>
+                </div>
+                <div class="card-body">
+                    {% if not jobs %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-briefcase fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No jobs posted yet.</p>
+                        <a href="{{ url_for('create_job') }}" class="btn btn-primary btn-sm">Post First Job</a>
+                    </div>
+                    {% endif %}
+                    {% for job in jobs %}
+                    <div class="job-card mb-3 p-3 border rounded">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="fw-bold mb-0">{{ job.title }}</h6>
+                                <small class="text-muted">{{ job.company }}</small>
+                            </div>
+                            <a href="{{ url_for('job_candidates', job_id=job.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-users me-1"></i>View Candidates
+                            </a>
+                        </div>
+                        <div>
+                            {% for skill in job.required_skills.split(',')[:4] %}
+                            <span class="badge bg-light text-dark border me-1">{{ skill.strip() }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Candidates -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold"><i class="fas fa-trophy text-warning me-2"></i>All Candidates (Ranked by Score)</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="px-4">#</th>
+                                    <th>Candidate</th>
+                                    <th>Category</th>
+                                    <th>Skills</th>
+                                    <th>Score</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for resume in all_resumes %}
+                                <tr>
+                                    <td class="px-4">
+                                        {% if loop.index == 1 %}<span class="badge bg-warning text-dark">🥇</span>
+                                        {% elif loop.index == 2 %}<span class="badge bg-secondary">🥈</span>
+                                        {% elif loop.index == 3 %}<span class="badge bg-warning text-dark opacity-75">🥉</span>
+                                        {% else %}{{ loop.index }}{% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">{{ resume.user_name }}</div>
+                                        <small class="text-muted">{{ resume.email or 'No email' }}</small>
+                                    </td>
+                                    <td><span class="badge bg-info">{{ resume.category or 'General' }}</span></td>
+                                    <td>
+                                        {% set skill_count = resume.skills.split(',')|length if resume.skills else 0 %}
+                                        <span class="badge bg-primary">{{ skill_count }} skills</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if (resume.score or 0) >= 75 %}bg-success{% elif (resume.score or 0) >= 50 %}bg-warning text-dark{% else %}bg-danger{% endif %} fs-6">
+                                            {{ resume.score or 0 }}/100
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('view_resume', resume_id=resume.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="6" class="text-center py-4 text-muted">No candidates yet.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

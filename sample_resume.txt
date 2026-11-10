@@ -1,0 +1,53 @@
+Rahul Sharma
+rahul.sharma@email.com | +91-9876543210 | github.com/rahulsharma | linkedin.com/in/rahulsharma
+
+OBJECTIVE
+Motivated Data Science and Machine Learning Engineer with 2 years of experience seeking opportunities in AI/ML domain.
+
+EDUCATION
+Bachelor of Technology (B.Tech) in Computer Science
+ABC University, Pune | 2018-2022 | CGPA: 8.5/10
+
+SKILLS
+Programming Languages: Python, Java, SQL, R
+Frameworks & Libraries: Flask, Django, TensorFlow, Keras, Scikit-learn, Pandas, NumPy, Matplotlib
+Databases: MySQL, MongoDB, PostgreSQL
+Cloud & DevOps: AWS, Docker, Git, GitHub
+Tools: Jupyter Notebook, VS Code, Power BI, Tableau
+Other: Machine Learning, Deep Learning, NLP, Data Analysis
+
+EXPERIENCE
+Data Science Intern | TechCorp Solutions | June 2022 - Dec 2022
+- Built a customer churn prediction model using Random Forest with 87% accuracy
+- Developed ETL pipelines using Python and Pandas for data preprocessing
+- Created Power BI dashboards for business stakeholders
+- Deployed ML model using Flask REST API on AWS EC2
+
+Python Developer | StartupXYZ | Jan 2023 - Present
+- Developed RESTful APIs using Flask and Django for e-commerce platform
+- Implemented SQL queries and database optimization for MySQL
+- Worked with Docker for containerization and deployment
+- Collaborated using Agile/Scrum methodology with Jira
+
+PROJECTS
+1. Resume Screening System (Python, Flask, NLP, Machine Learning)
+   - Built AI-powered resume screening system using TF-IDF and cosine similarity
+   - Achieved 92% accuracy in skill extraction using NLP techniques
+
+2. Stock Price Prediction (Python, TensorFlow, LSTM)
+   - Designed LSTM neural network for time-series stock price prediction
+   - Visualized results using Matplotlib and Seaborn
+
+3. E-commerce Recommendation System (Python, Scikit-learn, Flask)
+   - Implemented collaborative filtering recommendation engine
+   - Integrated with Flask backend and React frontend
+
+CERTIFICATIONS
+- AWS Certified Cloud Practitioner (2023)
+- TensorFlow Developer Certificate - Google (2022)
+- Python for Data Science - Coursera (2021)
+
+ACHIEVEMENTS
+- Winner, Smart India Hackathon 2022
+- Published research paper on NLP-based text classification
+- 5-star rating on HackerRank (Python)

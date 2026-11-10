@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Candidate Dashboard - ResumeAI{% endblock %}
+{% block content %}
+<div class="container-fluid py-4 px-4">
+    <!-- Header -->
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h2 class="fw-bold mb-0"><i class="fas fa-tachometer-alt text-primary me-2"></i>Candidate Dashboard</h2>
+            <p class="text-muted mb-0">Welcome, <strong>{{ session.user_name }}</strong> 👋</p>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                <i class="fas fa-upload me-2"></i>Upload Resume
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-card bg-primary text-white">
+                <i class="fas fa-file-alt fa-2x mb-2 opacity-75"></i>
+                <div class="fs-2 fw-bold">{{ resumes|length }}</div>
+                <div class="small opacity-75">Resumes Uploaded</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card bg-success text-white">
+                <i class="fas fa-briefcase fa-2x mb-2 opacity-75"></i>
+                <div class="fs-2 fw-bold">{{ jobs|length }}</div>
+                <div class="small opacity-75">Jobs Available</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card bg-warning text-dark">
+                <i class="fas fa-star fa-2x mb-2 opacity-75"></i>
+                <div class="fs-2 fw-bold">
+                    {% if resumes %}{{ resumes[0].score or 0 }}{% else %}--{% endif %}
+                </div>
+                <div class="small opacity-75">Latest Resume Score</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card bg-info text-white">
+                <i class="fas fa-tags fa-2x mb-2 opacity-75"></i>
+                <div class="fs-2 fw-bold">
+                    {% if resumes and resumes[0].category %}{{ resumes[0].category.split()[0] }}{% else %}--{% endif %}
+                </div>
+                <div class="small opacity-75">Predicted Category</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Resumes Column -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold"><i class="fas fa-file-alt text-primary me-2"></i>My Resumes</h5>
+                </div>
+                <div class="card-body">
+                    {% if not resumes %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-cloud-upload-alt fa-4x text-muted mb-3"></i>
+                        <p class="text-muted">No resumes yet. Upload your first resume!</p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                            <i class="fas fa-upload me-1"></i>Upload Now
+                        </button>
+                    </div>
+                    {% endif %}
+                    {% for resume in resumes %}
+                    <div class="resume-item mb-3 p-3 border rounded position-relative">
+                        <div class="d-flex align-items-start">
+                            <div class="resume-icon me-3">
+                                <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h6 class="mb-1 fw-semibold">{{ resume.name or 'Unknown' }}</h6>
+                                    <span class="badge {% if resume.score >= 75 %}bg-success{% elif resume.score >= 50 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                        {{ resume.score or 0 }}/100
+                                    </span>
+                                </div>
+                                <div class="small text-muted mb-2">
+                                    <i class="fas fa-tag me-1"></i>{{ resume.category or 'General' }}
+                                    {% if resume.email %} &bull; <i class="fas fa-envelope me-1"></i>{{ resume.email }}{% endif %}
+                                </div>
+                                {% if resume.skills %}
+                                <div class="skills-preview mb-2">
+                                    {% for skill in resume.skills.split(',')[:4] %}
+                                        {% if skill.strip() %}
+                                        <span class="badge bg-light text-dark border me-1">{{ skill.strip() }}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% set skill_count = resume.skills.split(',')|length %}
+                                    {% if skill_count > 4 %}<span class="badge bg-secondary">+{{ skill_count - 4 }}</span>{% endif %}
+                                </div>
+                                {% endif %}
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <a href="{{ url_for('view_resume', resume_id=resume.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>View Details
+                                    </a>
+                                    <div class="dropdown d-inline">
+                                        <button class="btn btn-sm btn-outline-success dropdown-toggle" data-bs-toggle="dropdown">
+                                            <i class="fas fa-search me-1"></i>Match Job
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            {% for job in jobs %}
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('match_resume_job', resume_id=resume.id, job_id=job.id) }}">
+                                                    {{ job.title }} - {{ job.company }}
+                                                </a>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Jobs Column -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold"><i class="fas fa-briefcase text-success me-2"></i>Available Jobs</h5>
+                </div>
+                <div class="card-body">
+                    {% for job in jobs %}
+                    <div class="job-card mb-3 p-3 border rounded">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="fw-bold mb-0">{{ job.title }}</h6>
+                                <small class="text-muted"><i class="fas fa-building me-1"></i>{{ job.company or 'Company' }}</small>
+                            </div>
+                            {% if resumes %}
+                            <a href="{{ url_for('match_resume_job', resume_id=resumes[0].id, job_id=job.id) }}"
+                               class="btn btn-sm btn-primary">
+                                <i class="fas fa-bolt me-1"></i>Match
+                            </a>
+                            {% endif %}
+                        </div>
+                        <p class="small text-muted mb-2">{{ job.description[:100] }}...</p>
+                        <div>
+                            {% for skill in job.required_skills.split(',')[:5] %}
+                            <span class="badge bg-primary bg-opacity-10 text-primary me-1 mb-1">{{ skill.strip() }}</span>
+                            {% endfor %}
+                            {% set total = job.required_skills.split(',')|length %}
+                            {% if total > 5 %}<span class="badge bg-secondary">+{{ total - 5 }} more</span>{% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-upload text-primary me-2"></i>Upload Resume</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('upload_resume') }}" method="POST" enctype="multipart/form-data" id="uploadForm">
+                    <div class="upload-zone text-center p-5 border-2 border-dashed rounded mb-3" id="dropZone">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                        <h6>Drag &amp; Drop your resume here</h6>
+                        <p class="text-muted small">or click to browse</p>
+                        <input type="file" name="resume" id="resumeFile" class="d-none" accept=".pdf,.docx,.doc,.txt" required>
+                        <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('resumeFile').click()">
+                            <i class="fas fa-folder-open me-1"></i>Browse File
+                        </button>
+                        <div id="fileName" class="mt-2 text-success fw-semibold d-none"></div>
+                    </div>
+                    <div class="alert alert-info small mb-3">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Supported formats: <strong>PDF, DOCX, DOC, TXT</strong> (Max 16MB)
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill fw-bold" id="uploadBtn">
+                            <i class="fas fa-upload me-2"></i>Analyze Resume
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
