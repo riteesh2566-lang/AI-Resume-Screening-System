@@ -1,0 +1,27 @@
+# Environment
+.env
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Database
+database/*.db
+instance/
+
+# Uploaded resumes
+uploads/*
+!uploads/.gitkeep
+
+# ML models
+models/
+
+# IDE
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
