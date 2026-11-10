@@ -170,11 +170,12 @@
             </div>
             <div class="modal-body">
                 <form action="{{ url_for('upload_resume') }}" method="POST" enctype="multipart/form-data" id="uploadForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="upload-zone text-center p-5 border-2 border-dashed rounded mb-3" id="dropZone">
                         <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
                         <h6>Drag &amp; Drop your resume here</h6>
                         <p class="text-muted small">or click to browse</p>
-                        <input type="file" name="resume" id="resumeFile" class="d-none" accept=".pdf,.docx,.doc,.txt" required>
+                        <input type="file" name="resume" id="resumeFile" class="d-none" accept=".pdf,.docx,.txt" required>
                         <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('resumeFile').click()">
                             <i class="fas fa-folder-open me-1"></i>Browse File
                         </button>
@@ -182,7 +183,7 @@
                     </div>
                     <div class="alert alert-info small mb-3">
                         <i class="fas fa-info-circle me-1"></i>
-                        Supported formats: <strong>PDF, DOCX, DOC, TXT</strong> (Max 16MB)
+                        Supported formats: <strong>PDF, DOCX, TXT</strong> (Max 16MB)
                     </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary flex-fill fw-bold" id="uploadBtn">

@@ -64,10 +64,15 @@
                         <div class="d-flex justify-content-between text-white mb-1">
                             <small>Skill Score: {{ result.skill_score }}%</small>
                             <small>Text Similarity: {{ result.text_score }}%</small>
+                            {% if result.semantic_score is not none %}<small>Semantic Similarity: {{ result.semantic_score }}%</small>{% endif %}
                         </div>
                         <div class="progress" style="height:10px">
                             <div class="progress-bar bg-white" style="width:{{ result.score }}%; opacity:0.9"></div>
                         </div>
+                    </div>
+                    <div class="alert alert-light border mt-3 mb-0 small">
+                        <strong>Matching method:</strong> {{ result.matching_method }}<br>
+                        {{ result.explanation.caution }}
                     </div>
                 </div>
             </div>

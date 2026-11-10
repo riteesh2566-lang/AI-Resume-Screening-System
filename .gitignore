@@ -3,25 +3,25 @@
 .venv/
 venv/
 
-# Python cache
+# Python
 __pycache__/
 *.py[cod]
 
 # Database
-database/*.db
-instance/
+database/*
+!database/.gitkeep
+*.db
+*.sqlite
+*.sqlite3
 
-# Uploaded resumes
+# Candidate resumes
 uploads/*
 !uploads/.gitkeep
-
-# ML models
-models/
 
 # IDE
 .vscode/
 .idea/
 
-# System files
+# OS
 .DS_Store
 Thumbs.db

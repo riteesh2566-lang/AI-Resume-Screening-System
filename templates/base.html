@@ -1,77 +1,50 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}ResumeAI - Smart Screening System{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    {% block extra_head %}{% endblock %}
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ResumeAI — Intelligent Hiring Workspace{% endblock %}</title>
+  <meta name="theme-color" content="#f7fbff">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top" id="mainNav">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="/">
-            <i class="fas fa-brain me-2 text-warning"></i>ResumeAI
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto align-items-center">
-                {% if session.user_id %}
-                    {% if session.user_role == 'recruiter' %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('recruiter_dashboard') }}"><i class="fas fa-tachometer-alt me-1"></i>Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('create_job') }}"><i class="fas fa-plus me-1"></i>Post Job</a></li>
-                    {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('candidate_dashboard') }}"><i class="fas fa-tachometer-alt me-1"></i>Dashboard</a></li>
-                    {% endif %}
-                    <li class="nav-item ms-2">
-                        <span class="badge bg-warning text-dark px-3 py-2 me-2">
-                            <i class="fas fa-user me-1"></i>{{ session.user_name }}
-                        </span>
-                    </li>
-                    <li class="nav-item"><a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-1"></i>Logout</a></li>
-                {% else %}
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
-                    <li class="nav-item ms-2"><a class="btn btn-warning btn-sm fw-bold" href="{{ url_for('register') }}">Get Started</a></li>
-                {% endif %}
-            </ul>
-        </div>
-    </div>
-</nav>
-
-<main>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="container mt-3">
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
-                        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }} me-2"></i>{{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            </div>
+<nav class="navbar navbar-expand-lg app-navbar sticky-top" id="mainNav">
+  <div class="container-fluid app-container">
+    <a class="navbar-brand brand-lockup" href="{{ url_for('index') }}">
+      <span class="brand-mark"><i class="fa-solid fa-layer-group"></i></span><span>resume<span class="brand-accent">ai</span><small>INTELLIGENT TALENT PLATFORM</small></span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+        {% if session.user_id %}
+          {% if session.user_role == 'recruiter' %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('recruiter_dashboard') }}"><i class="fa-solid fa-chart-pie me-2"></i>Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('create_job') }}"><i class="fa-solid fa-plus me-2"></i>Post a job</a></li>
+          {% else %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('candidate_dashboard') }}"><i class="fa-solid fa-grid-2 me-2"></i>Dashboard</a></li>
+          {% endif %}
+          <li class="nav-item"><span class="user-chip"><span class="user-avatar">{{ (session.user_name or 'U')[0]|upper }}</span>{{ session.user_name }}</span></li>
+          <li class="nav-item"><form method="POST" action="{{ url_for('logout') }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-nav-logout" type="submit">Sign out <i class="fa-solid fa-arrow-right-from-bracket ms-2"></i></button></form></li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('login', role='candidate') }}">Candidate login</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('login', role='recruiter') }}">Recruiter login</a></li>
+          <li class="nav-item"><a class="btn btn-primary btn-nav-cta" href="{{ url_for('register') }}">Candidate sign up <i class="fa-solid fa-arrow-up-right ms-2"></i></a></li>
         {% endif %}
-    {% endwith %}
-    {% block content %}{% endblock %}
-</main>
-
-<footer class="footer mt-5 py-4">
-    <div class="container text-center">
-        <p class="mb-0 text-muted">
-            <i class="fas fa-brain text-warning me-2"></i>
-            <strong>ResumeAI</strong> &mdash; AI-Powered Resume Screening &amp; Job Matching System
-        </p>
-        <small class="text-muted">Built with Python, Flask, NLP &amp; Machine Learning</small>
+      </ul>
     </div>
-</footer>
-
+  </div>
+</nav>
+<main>
+  {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="container-fluid app-container flash-wrap">{% for category, message in messages %}<div class="alert alert-{{ category }} alert-dismissible fade show" role="alert"><i class="fa-solid fa-circle-info me-2"></i>{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>{% endfor %}</div>{% endif %}{% endwith %}
+  {% block content %}{% endblock %}
+</main>
+<footer class="app-footer"><div class="container-fluid app-container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2"><div class="footer-brand"><span class="brand-mark small-mark"><i class="fa-solid fa-layer-group"></i></span><strong>resume<span class="brand-accent">ai</span></strong><span class="footer-divider">·</span><span>Intelligent hiring, made clearer.</span></div><small>Built with Python · Flask · NLP · Machine Learning</small></div></footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% block extra_scripts %}{% endblock %}
-</body>
-</html>
+</body></html>

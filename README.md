@@ -1,167 +1,137 @@
-# 🧠 ResumeAI — AI-Powered Resume Screening & Job Matching System
+# ResumeAI — Resume Analysis & Job Matching Platform
 
-A full-stack AI system built with **Python, Flask, NLP, and Machine Learning** that:
-- Extracts information from resumes (PDF/DOCX/TXT) using NLP
-- Calculates job match scores using **TF-IDF + Cosine Similarity**
-- Ranks candidates automatically
-- Predicts resume category (Data Scientist, Web Developer, etc.)
-- Recommends courses for missing skills
-- Generates AI resume quality scores (0–100)
+A Flask web application that parses candidate resumes, extracts job-related skills, compares resume evidence with job descriptions, and presents explainable match signals to candidates and recruiters.
 
----
+> **Responsible-use note:** Match percentages are assistive signals, not hiring decisions. Recruiters should review the underlying evidence and assess candidates consistently against job-related criteria. Do not use protected or sensitive personal characteristics to rank candidates.
 
-## 🚀 Quick Start (VS Code)
+## Features
 
-### 1. Install Python dependencies
-```bash
+- Candidate registration and login with Werkzeug password hashing.
+- Candidate resume upload (PDF, DOCX, TXT; 16 MB maximum).
+- Resume text extraction and structured extraction of contact details, education, experience, links and skills.
+- Resume completeness feedback and skill-based role-category suggestions.
+- Job posting and candidate dashboards.
+- Explainable job matching using explicit skill coverage and TF-IDF cosine similarity.
+- Optional semantic similarity using Sentence Transformers.
+- Missing-skill identification and learning-resource suggestions.
+- SQLite persistence.
+- CSRF protection, role-based route access, candidate resume ownership checks, secure upload filenames and environment-based secrets.
+
+## Technology
+
+- Python 3.10+
+- Flask, Flask-WTF, Werkzeug, python-dotenv
+- SQLite
+- pdfplumber, python-docx
+- Optional: Sentence Transformers (`all-MiniLM-L6-v2`)
+- HTML, CSS, Bootstrap, JavaScript, Chart.js
+
+## Run locally (Windows PowerShell)
+
+```powershell
+# From the project root
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 pip install -r requirements.txt
+Copy-Item .env.example .env
 ```
 
-### 2. Run the app
-```bash
+Generate a unique Flask secret and set it in `.env`:
+
+```powershell
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+Open `.env` and replace `SECRET_KEY`. Set a private recruiter account by filling in `BOOTSTRAP_RECRUITER_EMAIL` and `BOOTSTRAP_RECRUITER_PASSWORD` with your own values. Do not commit `.env`.
+
+Then run:
+
+```powershell
 python app.py
 ```
 
-### 3. Open in browser
+Open `http://127.0.0.1:5000`.
+
+The database and upload directories are created automatically. Demo job listings are seeded only when the jobs table is empty. Public registration creates candidate accounts only; recruiter accounts must be provisioned using the private environment variables.
+
+## Enable semantic matching (optional)
+
+The default installation is lightweight and uses skills + TF-IDF matching. To enable the embedding model:
+
+```powershell
+pip install -r requirements-ai.txt
 ```
-http://127.0.0.1:5000
+
+Set these values in `.env`:
+
+```env
+USE_SEMANTIC_MODEL=true
+SENTENCE_TRANSFORMER_MODEL=sentence-transformers/all-MiniLM-L6-v2
 ```
 
----
+The first semantic comparison downloads the model and may take time. If the optional package/model is unavailable, the matcher automatically falls back to skills + TF-IDF. When semantic mode is active, the score weights are 55% skill coverage, 20% TF-IDF similarity and 25% semantic similarity. Without semantic mode, the weights are 60% skill coverage and 40% TF-IDF similarity.
 
-## 🔐 Demo Login
+## Recruiter setup
 
-| Role      | Email                | Password |
-|-----------|----------------------|----------|
-| Recruiter | recruiter@demo.com   | demo123  |
-| Candidate | Register a new account | —      |
+Recruiter registration is intentionally disabled on the public registration page. Before the first run, set these variables in `.env`:
 
----
-
-## 📂 Project Structure
-
+```env
+BOOTSTRAP_RECRUITER_NAME=Recruiter Admin
+BOOTSTRAP_RECRUITER_EMAIL=your-private-recruiter-email@example.com
+BOOTSTRAP_RECRUITER_PASSWORD=use-a-unique-strong-password
 ```
+
+Restart the application. The account is created or its password is updated. Remove these bootstrap variables after provisioning if you do not want them retained in the environment. Never publish the real credentials.
+
+## Project structure
+
+```text
 resume_ai/
-│
-├── app.py                      ← Main Flask application
-├── requirements.txt            ← Python dependencies
+├── app.py
+├── wsgi.py
+├── requirements.txt
+├── requirements-ai.txt
+├── .env.example
+├── .gitignore
 ├── README.md
-│
+├── database/              # SQLite database created at runtime (not committed)
+├── uploads/               # Private uploaded resumes (not committed)
 ├── utils/
-│   ├── parser.py               ← PDF/DOCX text extraction
-│   ├── extractor.py            ← NLP: name, email, skills, score
-│   ├── matcher.py              ← TF-IDF cosine similarity matching
-│   └── recommendation.py      ← Course recs, category prediction, feedback
-│
+│   ├── parser.py
+│   ├── extractor.py
+│   ├── matcher.py
+│   └── recommendation.py
 ├── templates/
-│   ├── base.html               ← Navbar, footer, flash messages
-│   ├── index.html              ← Landing page
-│   ├── login.html / register.html
-│   ├── candidate_dashboard.html
-│   ├── recruiter_dashboard.html
-│   ├── resume_detail.html      ← Resume analysis + AI feedback
-│   ├── match_result.html       ← Match score + recommendations
-│   ├── job_candidates.html     ← Ranked candidate list
-│   └── create_job.html
-│
-├── static/
-│   ├── css/style.css           ← Custom styles
-│   └── js/main.js              ← Frontend logic
-│
-├── uploads/                    ← Uploaded resume files (auto-created)
-├── database/                   ← SQLite database (auto-created)
-└── models/                     ← Reserved for ML model files
+└── static/
 ```
 
----
+## Security and privacy notes
 
-## ✨ Features
+- `.env`, SQLite databases, uploaded resumes and model artifacts are excluded by `.gitignore`.
+- Do not put real candidate resumes or production data in a public repository.
+- Use HTTPS and set `COOKIE_SECURE=true` in production.
+- Configure a strong unique `SECRET_KEY` before deployment.
+- The app stores extracted resume text in SQLite. Restrict database and backup access and define a retention/deletion policy before using real candidate data.
+- A public demo should use synthetic sample resumes only.
 
-### Phase 1: Resume Upload
-- Upload PDF, DOCX, DOC, TXT (up to 16MB)
-- Drag & drop support
-- Automatic text extraction via `pdfplumber` and `python-docx`
+## Deployment
 
-### Phase 2: NLP Information Extraction
-- **Name** — heuristic line detection
-- **Email** — regex pattern matching
-- **Phone** — multi-format regex
-- **Education** — keyword section detection
-- **Experience** — keyword section detection
+A WSGI entry point is provided as `wsgi.py`. Example command:
 
-### Phase 3: Skill Extraction
-- 100+ skills across 9 categories:
-  - Programming Languages, Web Frontend, Web Backend
-  - Databases, Cloud/DevOps, Data Science/ML
-  - Business Intelligence, Mobile, Other
-- Fuzzy matching for partial skill names
+```bash
+gunicorn wsgi:app
+```
 
-### Phase 4: Job Matching Engine
-- **TF-IDF + Cosine Similarity** on full resume/job text (40% weight)
-- **Skill overlap scoring** (60% weight)
-- Combined weighted match percentage
+Set all required environment variables in the hosting provider's secret/environment settings. Use persistent storage for SQLite and uploads, or replace them with managed database/object storage for multi-instance production deployments. Set `COOKIE_SECURE=true` when served over HTTPS.
 
-### Phase 5: Candidate Ranking
-- Automatically sorts all candidates by match score
-- Gold/Silver/Bronze 🥇🥈🥉 ranking display
+## Limitations
 
-### Phase 6: Missing Skill Recommendations
-- Identifies missing skills vs. job requirements
-- Recommends courses from Udemy, Coursera, YouTube, official docs
+- Resume field and skill extraction uses heuristics and a curated skill vocabulary; extraction can miss context or produce false positives.
+- Semantic matching is optional and measures textual similarity, not candidate ability.
+- The resume completeness score measures the presence of selected resume sections; it is not a measure of a person's quality or employability.
+- The project is a portfolio prototype, not a validated or legally compliant hiring decision system.
 
-### Advanced AI Features
-- **Resume Score (0–100)** based on contact info, skills, education, experience, projects, certifications
-- **Category Prediction** — Data Scientist, ML Engineer, Web Developer, DevOps, etc.
-- **AI Resume Feedback** — Strengths, Improvements, Missing Sections
+## License
 
----
-
-## 🗄️ Database Schema (SQLite)
-
-**users** — id, name, email, password (hashed), role  
-**resumes** — id, user_id, filename, raw_text, name, email, phone, skills, education, experience, score, category  
-**jobs** — id, title, company, description, required_skills, created_by  
-**job_matches** — id, resume_id, job_id, match_score, matched_skills, missing_skills
-
----
-
-## 💻 Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Backend | Python 3.8+, Flask |
-| Database | SQLite (via Python's sqlite3) |
-| NLP / Text | Regex, Custom TF-IDF, pdfplumber, python-docx |
-| ML | Cosine Similarity, Skill-based category prediction |
-| Frontend | HTML5, CSS3, Bootstrap 5, JavaScript, Chart.js |
-| Security | Werkzeug password hashing, Session management |
-
----
-
-## 🔧 Troubleshooting
-
-**PDF not extracting text?**
-Install pdfplumber: `pip install pdfplumber`
-
-**DOCX upload failing?**
-Install python-docx: `pip install python-docx`
-
-**Database error?**
-Delete `database/resume_ai.db` and restart — it will be recreated.
-
-**Port already in use?**
-Change port in app.py: `app.run(debug=True, port=5001)`
-
----
-
-## 📈 Future Enhancements
-- spaCy Named Entity Recognition for better name/org extraction
-- scikit-learn Random Forest for category prediction
-- Resume PDF generation
-- Email notifications to candidates
-- Interview scheduling integration
-- REST API for mobile app
-
----
-
-Built with ❤️ using Python & Flask
+Add a license before accepting external contributions or redistributing the project.
